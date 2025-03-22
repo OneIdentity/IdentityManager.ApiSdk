@@ -5,3 +5,4 @@
 1. [Definition API](03-definition-api.md) describes definition and configuration of API methods.
 1. [Runtime API](04-runtime-api.md) covers different use cases of processing API requests.
 1. [Composition API plugins](05-composition-api-plugins.md) describes how the Composition API can be extended by plugins.
+1. [Request properties](06-request-properties.md)
