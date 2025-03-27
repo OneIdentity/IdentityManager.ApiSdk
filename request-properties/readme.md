@@ -25,13 +25,13 @@ The fundamental change for the “new” request properties is that the values a
 
 Let's start with a simple example, where we define a request property with one parameter, assign it to a service item and request the service item with a value for the parameter. Then we are going to have a look where the parameter value is stored and how to query it. 
 
-We have seen the basic definition of the request property in Figure 1, and we are going to add a parameter first. This parameter will ask for a user input. 
+We are going to add a parameter that will ask for a user input. 
 
 ![](<images/02.png>)
 
 *Parameter type set to "User prompt" for getting an input from the user.*
 
-The request property needs to be referenced in the service item as shown in Figure 3.
+The request property needs to be referenced in the service item as shown below.
 
 ![](<images/03.png>)
 
@@ -67,12 +67,11 @@ Once a request is submitted, you will find the values of the parameter(s) of the
 
 ![](<images/10.png>)
 
-You find the request property after the request has been submitted in table DialogParameterSet via the XObjectKey of the PersonWantsOrg table. 
+You find the request property after the request has been submitted in table `DialogParameterSet` via the XObjectKey of the `PersonWantsOrg` table. 
 
 ![](<images/11.png>)
 
-The values of the parameters can be found using a query for the DialogParameterSet (Figure 8 – 
-queried via the XObjectKey of the PersonWantsOrg table).
+The values of the parameters can be found using a query for the `DialogParameterSet` (queried via the XObjectKey of the `PersonWantsOrg` table).
 
 There is an example for how to query the new request properties in the default installation. The script `TSB_PersonWantsOrg_HandleRequestWithParameters` queries the new request properties in the context of requests with dynamic parameters – if you haven’t seen that OOTB feature yet, it is worth having a look. 
 
