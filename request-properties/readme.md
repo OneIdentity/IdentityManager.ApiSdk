@@ -28,6 +28,7 @@ Let's start with a simple example, where we define a request property with one p
 We have seen the basic definition of the request property in Figure 1, and we are going to add a parameter first. This parameter will ask for a user input. 
 
 ![](<images/02.png>)
+
 *Parameter type set to "User prompt" for getting an input from the user.*
 
 The request property needs to be referenced in the service item as shown in Figure 3.
@@ -37,23 +38,29 @@ The request property needs to be referenced in the service item as shown in Figu
 The following 3 screenshots show how the request property looks within the Angular portal when you request the Service Item. 
 
 ![](<images/04.png>)
+
 *How does the request property look during the request?*
 
 ![](<images/05.png>)
+
 *The request property after the request has been submitted*
 
 ![](<images/06.png>)
+
 *View for an approver*
 
 The definition of the request property can be found in the tables `AccProductParamCategory`, `DialogParameterSet` and `DialogParameter`. `DialogParameter` has a reference to `DialogParameterSet` and `DialogParameterSet` has a reference to `AccProductParamCategory`. The following three screenshots show the details.
 
 ![](<images/07.png>)
+
 *Definition of the request property in table `AccProductParamCategory`* 
 
 ![](<images/08.png>)
+
 *DialogParameterSet - Reference to table AccProductParamCategory via XObjectKey*
 
 ![](<images/09.png>)
+
 *Definition of Parameter1 in table DialogParameter. Reference to table DialogParameterSet via UID*
 
 Once a request is submitted, you will find the values of the parameter(s) of the request property in the tables `DialogParameterSet` and `DialogParameter`. `DialogParameterSet` has a reference to `PersonWantsOrg` and `DialogParameter` has a reference to `DialogParameterSet`. The two next screenshots show the details. 
@@ -63,7 +70,9 @@ Once a request is submitted, you will find the values of the parameter(s) of the
 You find the request property after the request has been submitted in table DialogParameterSet via the XObjectKey of the PersonWantsOrg table. 
 
 ![](<images/11.png>)
-The values of the parameters can be found using a query for the DialogParameterSet (Figure 8 – queried via the XObjectKey of the PersonWantsOrg table).
+
+The values of the parameters can be found using a query for the DialogParameterSet (Figure 8 – 
+queried via the XObjectKey of the PersonWantsOrg table).
 
 There is an example for how to query the new request properties in the default installation. The script `TSB_PersonWantsOrg_HandleRequestWithParameters` queries the new request properties in the context of requests with dynamic parameters – if you haven’t seen that OOTB feature yet, it is worth having a look. 
 
@@ -71,14 +80,16 @@ There is an example for how to query the new request properties in the default i
 
 The next example is how to make a parameter mandatory. Just set the flag “Mandatory parameter” to `true`. In addition, we are adding a display name to the parameter which is going to be used in the UI. The next three screenshots show how that is configured and what that looks like in the UI.
 
-
 ![](<images/12.png>)
+
 *Setting a display name, the sort order and making Parameter1 mandatory. Sort order will become relevant in the next chapter.*
 
 ![](<images/13.png>)
+
 *In the Angular Portal the display name is shown and it is a mandatory parameter marked by an asterisk* 
 
 ![](<images/14.png>)
+
 *Error message for mandatory parameter when the value remains empty*
 
 # Default values

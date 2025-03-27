@@ -6,3 +6,4 @@ This repository contains code samples and supporting materials for API developme
 
 - [C# Sample API plugin](SamplePlugin)
 - [API Development Samples](doc)
+- [Request Properties](request-properties)
