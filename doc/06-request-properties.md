@@ -9,6 +9,8 @@ https://docs.oneidentity.com/bundle/one-identity-manager_it-shop-administration_
 
 This document will not discuss all available options, but present you a decent amount of options as a solid foundation to start with.
 
+Note: The information on this page is based on Identity Manager 9.2.1. (Some screenshots still show previous versions.)
+
 # "Old" and "new" request properties
 
 When you create a Request Property there is a flag where you can choose whether you plan to use the “old” or the “new” ones. The flag is called "obsolete definition".
@@ -107,6 +109,8 @@ The next screenshot shows where to configure the script.
 
 For the next example we are going to add a second parameter. To control the display order of parameters, we use the “Sort order” configuration. Parameter1 has “Sort order” 10 and Parameter2 gets 20 and therefore Parameter1 gets displayed first. 
 
+# Filtering
+
 Instead of typing a value, Parameter2 will allow to select a value from an existing table – which is going to be the `Department` table in our case. Instead of displaying the department name (which would be the default), we are going to show the full path of the department. 
 
 We are not going to display all departments, but filter the departments based on the value of Parameter 1. We are using the `like` example to remind you that adding two strings requires SQL logic. 
@@ -115,15 +119,20 @@ We are not going to display all departments, but filter the departments based on
 FullPath like CONCAT('%',$PC(Parameter1)$,'%')
 ```
 
+To embed the UID of the logged-in user, you can use the `%useruid%` variable.
+
 The next five screenshots show how the configuration looks in details and what the resulting UI looks like. 
 
 ![](<images/19.png>)
+
 *Parameter2 with sort order 20 (Parameter1 has 10), therefore Parameter2 will appear second.*
 
 ![](<images/20.png>)
+
 *We will select Table as Data source that will use a table as source for the list. We could also hard code a list of permitted values.*
 
 ![](<images/21.png>)
+
 *Table column (query) will be the UID of the table, we use the FullPath as Display value and make the Condition query dependent on Parameter1*
 
 # Script for changing values
@@ -139,12 +148,15 @@ ParameterSet("Parameter3").Value = Value
 The next three screenshots show the details of the configuration and how the UI will look like. 
 
 ![](<images/24.png>)
+
 *Script to run when the value of Parameter1 changes*
 
 ![](<images/25.png>)
+
 *Default values do not trigger the script*
 
 ![](<images/26.png>)
+
 *When the value of Parameter1 has changed the script, calculate the value for Parameter3*
 
 The script will run multiple times, and you may only want to run the script when e.g. the old value is different to the new value. In that case, you can add a simple string comparison:
@@ -166,5 +178,19 @@ Value = Provider.GetValue(Of String)("UID_PersonInserted")
 
 You can even think about selecting (or typing) a parameter value, load ( = calculate) values from the database, modify them and submit the request for saving them after approval. 
 
-As you can see, there are a lot of options using the new request properties for the Angular portal and much more as shown here is possible.
+## When does the script for changing values run?
 
+It is important to keep in mind that this script is executed more often than you expect.
+
+- The script for a parameter runs when the parameter set as a whole is *loaded*. This happens whenever some component (the UI, or a script) loads the parameter set in order to evaluate its values.
+- The script runs whenever the value of the parameter *changes*.
+
+You may want some code to run only in one of the two cases. You can use the `IsInit` variable to detect the specific case:
+
+``` vb
+If DbVal.ConvertTo(Of Boolean)(Variables("IsInit")) Then
+  ' this code runs only on initialization
+Else
+  ' this code runs only when the parameter value changes
+End If
+```
