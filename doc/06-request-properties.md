@@ -138,16 +138,14 @@ ParameterSet("Parameter3").Value = Value
 
 The next three screenshots show the details of the configuration and how the UI will look like. 
 
-<img 24>
+![](<images/24.png>)
+*Script to run when the value of Parameter1 changes*
 
-Figure 24: Script to run when the value of Parameter1 changes 
+![](<images/25.png>)
+*Default values do not trigger the script*
 
-<img 25>
-Figure 25: Default values do not trigger the script 
-
-<img 26>
-
-Figure 26: When the value of Parameter1 has changed the script, calculate the value for Parameter3 
+![](<images/26.png>)
+*When the value of Parameter1 has changed the script, calculate the value for Parameter3*
 
 The script will run multiple times, and you may only want to run the script when e.g. the old value is different to the new value. In that case, you can add a simple string comparison:
 
