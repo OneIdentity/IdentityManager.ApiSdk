@@ -73,7 +73,7 @@ You find the request property after the request has been submitted in table `Dia
 
 The values of the parameters can be found using a query for the `DialogParameterSet` (queried via the XObjectKey of the `PersonWantsOrg` table).
 
-There is an example for how to query the new request properties in the default installation. The script `TSB_PersonWantsOrg_HandleRequestWithParameters` queries the new request properties in the context of requests with dynamic parameters – if you haven’t seen that OOTB feature yet, it is worth having a look. 
+There is an example for how to query the new request properties in the default installation. The script `QER_Get_ParameterValue_Of_ParameterSet_Of_PWO` queries the new request properties in the context of requests with dynamic parameters – if you haven’t seen that OOTB feature yet, it is worth having a look. 
 
 # Mandatory properties and display names
 
@@ -129,8 +129,6 @@ We are not going to display all departments, but filter the departments based on
 FullPath like CONCAT('%',$PC(Parameter1)$,'%')
 ```
 
-To embed the UID of the logged-in user, you can use the `%useruid%` variable.
-
 The next five screenshots show how the configuration looks in details and what the resulting UI looks like. 
 
 ![](<images/19.png>)
@@ -178,15 +176,37 @@ If String.Compare( Convert.ToString(ParameterSet("Parameter1").Value) , Convert.
 End If
 ```
 
-Thanks to the code completion feature, you will find more methods you can use within your scripts. As a starting point I would like to mention three snippets to get a starting point for looking into details of the API. 
+The code completion feature will show more helpful methods that you can use within your scripts.
+
+## Making a parameter mandatory
 
 ``` vb
 ParameterSet("Parameter3").IsMandatory = True
-Value = Connection.User.Uid
-Value = Provider.GetValue(Of String)("UID_PersonInserted")
 ```
 
-You can even think about selecting (or typing) a parameter value, load ( = calculate) values from the database, modify them and submit the request for saving them after approval. 
+## Referencing the current user
+
+To reference the UID of the logged-in user, use the `Connection.User.Uid` property.
+
+To embed the UID of the logged-in user in a WHERE clause, you can use the `%useruid%` variable.
+
+## Referencing the request recipient
+
+The following script shows how to obtain the request recipient (`UID_PersonOrdered`).
+
+``` vb
+Dim objKey = TryCast(ParameterSet, IDialogParameterSet).UsedBy
+Dim f As ISqlFormatter = Connection.SqlFormatter
+
+Dim request As IEntity = Nothing
+
+If objKey.Tablename = "ShoppingCartItem" AndAlso Connection.Session.Source().TryGet(objKey, request) Then
+  Dim recipient As String = request.GetValue("UID_PersonOrdered").String
+
+  ' set the query where clause with something that depends on the recipient, for example:
+  TryCast(ParameterSet("Role"), IDialogParameter).QueryWhereClause = String.Format("UID_Org in (select UID_Org from PersonInOrg where {0})", f.UidComparison("UID_Person", recipient))
+End If
+```
 
 ## When does the script for changing values run?
 
