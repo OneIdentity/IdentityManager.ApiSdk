@@ -244,7 +244,7 @@ You can define a plugin to add custom logic to the shopping cart check.
 
 In a Composition API plugin, add a public class implementing the `ICartCheckProvider` interface to integrate with the cart check.
 
-Another class implementing `ICartCheck` is responsible for creating check classes for the individual cart items. The `ICartItemCheck` object implement the actual checking logic for a single item. The object has access to a `ICartItemCheckContext` that provides the user's session and the cart item being checked.
+Another class implementing `ICartCheck` is responsible for creating check classes for the individual cart items. The `ICartItemCheck` object implements the actual checking logic for a single item. The object has access to a `ICartItemCheckContext` that provides the user's session and the cart item being checked.
 
 ```csharp
 public class CartCheckProvider : ICartCheckProvider, IKnownTypeProvider
@@ -257,9 +257,20 @@ public class CartCheckProvider : ICartCheckProvider, IKnownTypeProvider
         });
     }
 
-    public IEnumerable<Type> GetTypes()
+    // This method defines implementation types of an interface that are known to be safe
+	// for (de-)serialization.
+    public IReadOnlyDictionary<Type, IReadOnlyList<Type>> GetTypes()
     {
-        return new[] { typeof(SampleCheck) };
+        return new Dictionary<Type, IReadOnlyList<Type>>
+        {
+            {
+                typeof(ICartItemCheck),
+                new[]
+                {
+                    typeof(SampleCheck)
+                }
+            }
+        };
     }
 }
 
