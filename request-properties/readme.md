@@ -184,6 +184,20 @@ The code completion feature will show more helpful methods that you can use with
 ParameterSet("Parameter3").IsMandatory = True
 ```
 
+## Storing date values in a request property
+
+When storing a `DateTime` value in a request property, it is stored as `string` value. Care must be taken to store the value in a culture-invariant format so that it can always be deserialized back into a `DateTime` value.
+
+To store the date in a culture-invariant format, use the `ToString` overload shown in the following example.
+
+``` vb
+' assuming person is a Person entity, get its ExitDate value
+If person.GetValue(Of Date)("ExitDate") > DbVal.MinDate Then
+    ' set the NewExitDate parameter
+		ParameterSet("NewExitDate").Value = (person.GetValue(Of Date)("ExitDate")).ToString("o", System.Globalization.CultureInfo.InvariantCulture)
+End If
+```
+
 ## Referencing the current user
 
 To reference the UID of the logged-in user, use the `Connection.User.Uid` property.
