@@ -910,3 +910,85 @@ private static async Task PrepareRequestAsync(IRequest request, CancellationToke
     env.Table = new MetaTableDescriptor(request.Session.MetaData().GetTable("Person"));
 }
 ```
+
+## Search modes
+
+The API Server supports 3 possible search modes that define how search results are used when loading entities.
+
+When the server receives a request to this API including a search term, it has to produce a result based on two sets of entities:
+
+ - *A* is the set of entities returned by the search index, identified by their object keys.
+ - *B* is the set of entities returned by the database query, filtered by the permission layer.
+
+The result of the API query *C* must be the **intersection** of *A* and *B*.
+
+The API Server supports 3 different `SearchMode`s.
+
+- `Default`
+- `SearchAfterLoad`
+- `LoadCached`
+
+The mode can be configured on the API level:
+
+``` csharp
+builder.AddMethod(Method.Define("requests")
+    .FromTable("PersonWantsOrg")
+    .EnableRead()
+    .With(m => m.SearchMode = SearchMode.SearchAfterLoad)
+);
+```
+
+Each mode has different performance characteristics and the best mode for each API depends on a combination of factors:
+- the table size,
+- the average expected result size
+- the permission configuration.
+
+Also consider that the number of search results returned by the index is limited by the `Common\Indexing\DefaultResultLimit` configuration parameter.
+
+### Default mode
+
+This mode works best when the size of *A* is comparable to *C*. In this mode, *B* is calculated and *A* is queried using the set *B* as a filter. Because the limitation is applied early on in the process, this can lead to the user seeing few search results even though there may be more.
+
+### SearchAfterLoad mode
+
+This mode can be considered the opposite of the default mode: First the entirety of *B* is loaded into memory. Then, *A* is evaluated using *B* as a filter.
+
+This mode works best when *A* is large but *B* is comparatively small.
+
+In the portal application, this mode is used for the request history API for regular (non-administrator users). Regular users only see their requests, so *B* is comparatively small. This behavior can be defined in code like in this example:
+
+``` csharp
+builder.AddMethod(Method.Define("requests")
+    .FromTable("PersonWantsOrg")
+    .EnableRead()
+    .Subscribe(c =>
+    {
+        // Define the SearchMode per request
+
+        var coll = c.Request.GetEntityCollectionRequest();
+        var names = c.Request.Session.Principal.Groups.GetGroupNames().ToHashSet();
+
+        // Check the user's permission groups
+        var isAuditor = names.Contains("vi_4_AUDITING_AUDITOR");
+
+        if (isAuditor)
+        {
+            // Sees all entities -> use default mode
+            coll.SearchMode = EntitySearchMode.Default;
+        }
+        else
+        {
+            // User sees only a small subset -> use SearchAfterLoad mode
+            coll.SearchMode = EntitySearchMode.SearchAfterLoad;
+        }
+    }
+);
+```
+
+### LoadCached mode
+
+Depending on the situation, *A* and *B* can both be large, but the intersection *C* may be small.
+
+This mode addresses this situation, it loads *B* once and caches the result across different users and queries. (This mode only works when there is no viewing permission filter on the table. If there is, then the cache is bypassed for security reasons.)
+
+The default service catalog API uses this mode. This works well because the base set of `AccProduct` entities lends itself well to cross-user caching.
