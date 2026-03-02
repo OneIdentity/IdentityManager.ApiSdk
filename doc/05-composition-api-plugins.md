@@ -480,3 +480,42 @@ public class SamplePasswordItemProvider : IPasswordItemProvider
 }
 ```
 
+## Ownership providers
+
+The Composition API uses plugins to assign ownership to business objects. For example, this is used to determine if a user is allowed to request history information through the history API for an object.
+
+Integrating custom data types in the history API will require an implementation of the `IOwnershipInfoProvider` interface like shown in the following example.
+
+``` csharp
+public class CustomOwnershipInfoProvider : IOwnershipInfoProvider
+{
+    public IReadOnlyList<IOwnershipInfo> BuildOwnershipInfos(IResolve resolver)
+    {
+        return new[] { new CustomOwnershipInfo() };
+    }
+}
+
+public class CustomOwnershipInfo : IOwnershipInfo
+{
+    public string GetWhereClause()
+    {
+        // Objects matching this condition will show up under "My responsibilities"
+        return "1=0"; 
+    }
+
+    public async Task<bool> IsOwnerAsync(ISession session, IEntity entity, CancellationToken ct)
+    {
+        // TODO: insert code to determine ownership for this object under
+        // the supplied session context.
+        return true;
+    }
+
+    // Data table name of the custom object type.
+    public string TableName => "CCCTableName";
+
+    // List of program functions that grant administrative access
+    // to objects of this type.
+    public IReadOnlyCollection<string> FeatureNamesAdmin { get; }
+        = new[] { "Portal_UI_MyCustomAdminFeature" };
+}
+```

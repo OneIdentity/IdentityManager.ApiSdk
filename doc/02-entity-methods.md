@@ -290,6 +290,60 @@ private class PersonFilterProvider : FilterProvider
 }
 ```
 
+### The SQL IN clause limit
+
+Identity Manager enforces a limit on the length of SQL in clauses that are embedded in query strings. When calling the `ISqlFormatter`'s `InClause` function, an exception will be thrown if the list includes more than 1024 elements. This is because SQL Server will often fail to create execution plans when the list of the form `<column> in ( 'uid1', 'uid2', ...)` becomes very long.
+
+To work around this limit, the easiest option is to break up the query into partitions of sizes below 1024 elements. Depending on the context, this option may not always be available.
+
+In the context of an API method, the function might be used like this.
+
+``` csharp
+Method.Define("person")
+  .FromTable("Person")
+  .WithParameter("values", typeof(string), "Comma-separated values", isInQuery: true)
+  .EnableRead()
+  
+  .WithWhereClause(request =>
+  {
+    var values = request.Parameters.Get<string>("values").Split(',');
+    return request.Session.SqlFormatter().InClause("UID_Person", ValType.String, values);
+  })
+```
+
+However, the code above will fail with more than 1024 list elements.
+
+Instead, you can use an `ExpressionClause` which is not subject to the 1024 element limit.
+
+``` csharp
+Method.Define("person")
+  .FromTable("Person")
+  .WithParameter("values", typeof(string), "Comma-separated values"))
+  .EnableRead()
+
+  .WithClause(request => new ExpressionClause(ExpressionClauseType.In,
+       new ColumnReference("Person", "UID_Person"),
+       new FixValue
+       {
+          Value = request.Parameters.Get<string>("values").Split(',')
+       }))
+```
+
+The following example shows how to pass a list of values as a parameter. This solution adds two clauses to the query:
+
+- a parameter clause that defines a SQL query parameter,
+- and a string clause that reads this parameter using the `QBM_FCVStringToList` function.
+
+``` csharp
+public static void BuildInClause(IEnumerable<string> values, Query query, string selectionColumn)
+{
+    var parameterName = "p" + SecureRandom.Int();
+    query.AddClause(new QueryParameter(parameterName, ValType.String, string.Join("|", values)));
+
+    query.AddClause(new WhereClause(selectionColumn + " in (select parametervalue from QBM_FCVStringToList(@" + parameterName + ", '|', 0, 0))";
+}
+```
+
 ## Grouping
 
 To enable the grouping API, ensure that the `EnableGroupingApi` and `EnableDataModelApi` properties are set to `true`.
